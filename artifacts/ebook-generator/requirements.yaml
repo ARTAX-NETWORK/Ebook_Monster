@@ -1,0 +1,18 @@
+packages:
+  "framer-motion": "Required for cinematic page transitions and scroll-triggered animations in the premium UI"
+  "react-hook-form": "For complex form state management"
+  "@hookform/resolvers": "For Zod schema validation integration"
+  "canvas-confetti": "For god-tier success celebration on the generation page"
+  "@types/canvas-confetti": "Types for canvas-confetti"
+
+images:
+  - path: "artifacts/ebook-generator/public/images/hero-bg.png"
+    description: "Ultra dark premium deep space background with subtle electric violet and gold nebula light leaks, cinematic 8k resolution, minimalist but powerful mood"
+    aspect_ratio: "16:9"
+  - path: "artifacts/ebook-generator/public/images/accent-glow.png"
+    description: "Abstract geometric neon glow in violet and gold on a transparent or pure black background, used for UI accents"
+    aspect_ratio: "1:1"
+
+notes:
+  - The application relies on React Query hooks from @workspace/api-client-react
+  - Force dark mode styling across the entire app

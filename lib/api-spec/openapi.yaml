@@ -1,0 +1,309 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: God Tier Ebook Generator API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: ebook
+    description: Ebook generation operations
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /ebook/generate:
+    post:
+      operationId: generateEbook
+      tags: [ebook]
+      summary: Generate ebook bundle
+      description: Generates an ebook HTML with unique design and optional translations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateEbookRequest"
+      responses:
+        "200":
+          description: Generation successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateEbookResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /ebook/download/{bundleId}:
+    get:
+      operationId: downloadBundle
+      tags: [ebook]
+      summary: Download ebook bundle as ZIP
+      parameters:
+        - name: bundleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ZIP bundle
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Bundle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /ebook/preview/{bundleId}:
+    get:
+      operationId: previewBundle
+      tags: [ebook]
+      summary: Get bundle preview info
+      parameters:
+        - name: bundleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bundle info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BundlePreview"
+        "404":
+          description: Bundle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /ebook/html/{bundleId}:
+    get:
+      operationId: getEbookHtml
+      tags: [ebook]
+      summary: Get raw HTML for live preview
+      parameters:
+        - name: bundleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: HTML content
+          content:
+            text/html:
+              schema:
+                type: string
+        "404":
+          description: Bundle not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /ebook/history:
+    get:
+      operationId: getEbookHistory
+      tags: [ebook]
+      summary: Get history of generated ebooks
+      responses:
+        "200":
+          description: List of generated ebooks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EbookHistoryResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    GenerateEbookRequest:
+      type: object
+      properties:
+        ebookTitle:
+          type: string
+          description: Title of the ebook
+        ebookSubtitle:
+          type: string
+          description: Subtitle of the ebook
+        authorName:
+          type: string
+          description: Author name
+        githubRepoLink:
+          type: string
+          description: GitHub repository link
+        brandName:
+          type: string
+          description: Brand name (auto-generated if empty)
+        priceStarter:
+          type: number
+          description: Starter offer price
+        pricePro:
+          type: number
+          description: Pro offer price
+        priceLifetime:
+          type: number
+          description: Lifetime offer price
+        promoEndDate:
+          type: string
+          description: Promo end date (YYYY-MM-DD)
+        apiKeys:
+          type: array
+          items:
+            type: string
+          description: Optional QWEN API keys for translation
+        selectedLangs:
+          type: array
+          items:
+            type: string
+          description: Language codes to translate to
+      required:
+        - ebookTitle
+        - authorName
+        - selectedLangs
+    GenerateEbookResponse:
+      type: object
+      properties:
+        bundleId:
+          type: string
+        success:
+          type: boolean
+        brandName:
+          type: string
+        designTheme:
+          type: string
+        languageCount:
+          type: number
+        generatedAt:
+          type: string
+        coverImageBase64:
+          type: string
+          description: Base64 encoded cover image (optional)
+      required:
+        - bundleId
+        - success
+        - brandName
+        - languageCount
+    BundlePreview:
+      type: object
+      properties:
+        bundleId:
+          type: string
+        languages:
+          type: array
+          items:
+            $ref: "#/components/schemas/LanguageInfo"
+        brandName:
+          type: string
+        designTheme:
+          type: string
+        generatedAt:
+          type: string
+        coverImageBase64:
+          type: string
+          description: Base64 cover image (may arrive after initial generation)
+      required:
+        - bundleId
+        - languages
+        - brandName
+    LanguageInfo:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+        flag:
+          type: string
+        native:
+          type: string
+      required:
+        - code
+        - name
+        - flag
+        - native
+    EbookHistoryItem:
+      type: object
+      properties:
+        id:
+          type: string
+        ebookTitle:
+          type: string
+        authorName:
+          type: string
+        brandName:
+          type: string
+        designTheme:
+          type: string
+        languageCount:
+          type: number
+        selectedLangs:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - ebookTitle
+        - authorName
+        - brandName
+        - designTheme
+        - languageCount
+        - selectedLangs
+        - createdAt
+    EbookHistoryResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/EbookHistoryItem"
+        total:
+          type: number
+      required:
+        - items
+        - total
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
